@@ -1,13 +1,12 @@
 import React from "react";
 import dayjs, { Dayjs } from "dayjs";
+import { useTime } from "@/app/context/time";
+import { getTotalTimeSpent } from "@/app/utils/time";
 
 const Time: React.FC<{ start: Dayjs }> = ({ start }) => {
-  const now = dayjs();
-  const hours = Math.abs(now.hour() - start.hour());
-  const minutes = Math.abs(now.minute() - start.minute());
-  const seconds = Math.abs(now.second() - start.second());
+  const { intervals, isActive } = useTime();
+  const timeBlocks = getTotalTimeSpent(intervals, isActive);
 
-  const timeBlocks = [hours, minutes, seconds];
   return (
     <div className="w-64 h-64 border-2 border-gray-100 rounded-full flex items-center justify-center">
       {timeBlocks.map((time, idx) => (

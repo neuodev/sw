@@ -7,7 +7,12 @@ function Stopwatch() {
   return (
     <div className="flex flex-col items-center justify-center">
       <Time start={dayjs().add(10, "minute")} />
-      <Controller />
+      <Controller
+        onStart={() => {}}
+        onStop={() => {}}
+        onReset={() => {}}
+        isActive={false}
+      />
     </div>
   );
 }
