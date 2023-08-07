@@ -52,13 +52,21 @@ function timeReducer(state: TimeState, action: TimeAction): TimeState {
   switch (action.type) {
     case TimeActionType.Start:
       return produce(state, (d) => {
-        const start = action.time || dayjs();
+        let start: Dayjs;
+
+        if (state.snapshots.length === 0) {
+          start = dayjs();
+          d.snapshots.push(start);
+        } else {
+          start = state.snapshots[state.snapshots.length - 1];
+        }
+
         d.start = start;
         d.end = start;
-        d.snapshots.push(start);
         d.isStopped = false;
         d.isTimerStarted = true;
       });
+
     case TimeActionType.Pause:
       return produce(state, (d) => {
         if (!state.end) throw new Error("No end date");
