@@ -3,9 +3,17 @@ import dayjs, { Dayjs } from "dayjs";
 import { useTime } from "@/app/context/time";
 import { getTotalTimeSpent } from "@/app/utils/time";
 
-const Time: React.FC<{ start: Dayjs }> = ({ start }) => {
-  const { intervals, isActive } = useTime();
-  const timeBlocks = getTotalTimeSpent(intervals, isActive);
+const Time: React.FC<{}> = () => {
+  const { start, end } = useTime();
+
+  const timeBlocks: number[] =
+    start && end
+      ? [
+          end.diff(start, "hour"),
+          end.diff(start, "minute"),
+          end.diff(start, "second"),
+        ]
+      : [0, 0, 0];
 
   return (
     <div className="w-64 h-64 border-2 border-gray-100 rounded-full flex items-center justify-center">

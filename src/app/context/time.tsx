@@ -8,44 +8,64 @@ type TimeProviderContext = TimeState & TimeActions;
 
 type TimeActions = {
   startTimer(time?: Dayjs): void;
-  stopTimer(): void;
+  pauseTimer(): void;
+  continueTimer(): void;
   resetTimer(): void;
+  addSecond(): void;
 };
 type TimeState = {
-  intervals: Dayjs[];
-  timeSpent: number;
+  start: Dayjs | null;
+  end: Dayjs | null;
   isTimerStarted: boolean;
-  isActive: boolean;
+  isStopped: boolean;
 };
 
 enum TimeActionType {
   Start = "start",
-  Stop = "stop",
+  Pause = "stop",
+  Continue = "continue",
   Reset = "reset",
+  AddSecond = "add-second",
 }
 
 type TimeAction =
   | { type: TimeActionType.Start; time?: Dayjs }
-  | { type: TimeActionType.Stop }
-  | { type: TimeActionType.Reset };
+  | { type: TimeActionType.Pause }
+  | { type: TimeActionType.Reset }
+  | { type: TimeActionType.AddSecond }
+  | { type: TimeActionType.Continue };
+
+const defaultState: TimeState = {
+  start: null,
+  end: null,
+  isStopped: true,
+  isTimerStarted: false,
+};
 
 function timeReducer(state: TimeState, action: TimeAction): TimeState {
   switch (action.type) {
     case TimeActionType.Start:
       return produce(state, (d) => {
-        d.intervals.push(action.time || dayjs());
-        d.isActive = true;
+        const start = action.time || dayjs();
+        d.start = start;
+        d.end = start;
+        d.isStopped = false;
         d.isTimerStarted = true;
       });
-    case TimeActionType.Stop:
+    case TimeActionType.Pause:
       return produce(state, (d) => {
-        d.isActive = false;
+        d.isStopped = true;
+      });
+    case TimeActionType.Continue:
+      return produce(state, (d) => {
+        d.isStopped = false;
       });
     case TimeActionType.Reset:
+      return produce(defaultState, () => {});
+    case TimeActionType.AddSecond:
       return produce(state, (d) => {
-        d.isActive = false;
-        d.isTimerStarted = false;
-        d.intervals = [];
+        if (!d.end) throw new Error("End never assigned a value");
+        d.end = d.end.add(1, "second");
       });
     default:
       return state;
@@ -55,22 +75,23 @@ function timeReducer(state: TimeState, action: TimeAction): TimeState {
 export const TimeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [state, dispatch] = useReducer(timeReducer, {
-    intervals: [],
-    timeSpent: 0,
-    isActive: false,
-    isTimerStarted: false,
-  });
+  const [state, dispatch] = useReducer(timeReducer, defaultState);
 
   const actions: TimeActions = {
     startTimer(time?: Dayjs) {
       dispatch({ type: TimeActionType.Start, time });
     },
-    stopTimer() {
-      dispatch({ type: TimeActionType.Stop });
+    pauseTimer() {
+      dispatch({ type: TimeActionType.Pause });
+    },
+    continueTimer() {
+      dispatch({ type: TimeActionType.Continue });
     },
     resetTimer() {
       dispatch({ type: TimeActionType.Reset });
+    },
+    addSecond() {
+      dispatch({ type: TimeActionType.AddSecond });
     },
   };
   return (

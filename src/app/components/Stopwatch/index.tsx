@@ -6,13 +6,8 @@ import Controller from "./Controller";
 function Stopwatch() {
   return (
     <div className="flex flex-col items-center justify-center">
-      <Time start={dayjs().add(10, "minute")} />
-      <Controller
-        onStart={() => {}}
-        onStop={() => {}}
-        onReset={() => {}}
-        isActive={false}
-      />
+      <Time />
+      <Controller />
     </div>
   );
 }
