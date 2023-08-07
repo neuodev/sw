@@ -27,6 +27,10 @@ const Controller: React.FC<{}> = () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [addSecond, isStopped]);
+
+  const pauseTimerHandler = useCallback(async () => {
+    pauseTimer();
+  }, [pauseTimer]);
   return (
     <div className="flex mt-8 gap-7">
       {isTimerStarted && (
@@ -36,7 +40,11 @@ const Controller: React.FC<{}> = () => {
       )}
 
       {((!isTimerStarted && isStopped) || (isTimerStarted && !isStopped)) && (
-        <Button onClick={pauseTimer} disabled={isStopped} variant="error">
+        <Button
+          onClick={pauseTimerHandler}
+          disabled={isStopped}
+          variant="error"
+        >
           Stop
         </Button>
       )}

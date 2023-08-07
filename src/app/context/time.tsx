@@ -13,11 +13,13 @@ type TimeActions = {
   resetTimer(): void;
   addSecond(): void;
 };
+
 type TimeState = {
   start: Dayjs | null;
   end: Dayjs | null;
   isTimerStarted: boolean;
   isStopped: boolean;
+  snapshots: Dayjs[];
 };
 
 enum TimeActionType {
@@ -26,20 +28,22 @@ enum TimeActionType {
   Continue = "continue",
   Reset = "reset",
   AddSecond = "add-second",
+  AddTimeRecord = "add-time-record",
 }
 
 type TimeAction =
   | { type: TimeActionType.Start; time?: Dayjs }
   | { type: TimeActionType.Pause }
+  | { type: TimeActionType.Continue }
   | { type: TimeActionType.Reset }
-  | { type: TimeActionType.AddSecond }
-  | { type: TimeActionType.Continue };
+  | { type: TimeActionType.AddSecond };
 
 const defaultState: TimeState = {
   start: null,
   end: null,
   isStopped: true,
   isTimerStarted: false,
+  snapshots: [],
 };
 
 function timeReducer(state: TimeState, action: TimeAction): TimeState {
@@ -49,12 +53,16 @@ function timeReducer(state: TimeState, action: TimeAction): TimeState {
         const start = action.time || dayjs();
         d.start = start;
         d.end = start;
+        d.snapshots.push(start);
         d.isStopped = false;
         d.isTimerStarted = true;
       });
     case TimeActionType.Pause:
       return produce(state, (d) => {
+        if (!state.end) throw new Error("No end date");
+
         d.isStopped = true;
+        d.snapshots.push(state.end);
       });
     case TimeActionType.Continue:
       return produce(state, (d) => {
