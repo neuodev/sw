@@ -1,7 +1,5 @@
 import React from "react";
-import dayjs, { Dayjs } from "dayjs";
 import { useTime } from "@/app/context/time";
-import { getTotalTimeSpent } from "@/app/utils/time";
 
 const Time: React.FC<{}> = () => {
   const { start, end } = useTime();
