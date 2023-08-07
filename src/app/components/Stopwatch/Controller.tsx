@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "../Common/Button";
 import { useTime } from "@/app/context/time";
 import dayjs from "dayjs";
+import { snapshotsDB } from "@/app/storage/snapshots";
 
 const Controller: React.FC<{}> = () => {
   const {
@@ -27,23 +28,20 @@ const Controller: React.FC<{}> = () => {
     };
   }, [addSecond, isStopped]);
 
-  const pauseTimerHandler = useCallback(async () => {
-    pauseTimer();
-  }, [pauseTimer]);
+  const resetTimerHandler = useCallback(async () => {
+    resetTimer();
+    await snapshotsDB.clean(dayjs());
+  }, [resetTimer]);
   return (
     <div className="flex mt-8 gap-7">
       {isTimerStarted && (
-        <Button onClick={resetTimer} variant="error">
+        <Button onClick={resetTimerHandler} variant="error">
           Reset
         </Button>
       )}
 
       {((!isTimerStarted && isStopped) || (isTimerStarted && !isStopped)) && (
-        <Button
-          onClick={pauseTimerHandler}
-          disabled={isStopped}
-          variant="error"
-        >
+        <Button onClick={pauseTimer} disabled={isStopped} variant="error">
           Stop
         </Button>
       )}

@@ -29,7 +29,7 @@ const TimeRecords = () => {
           { label: "Max. Record", value: max },
           { label: "Avg. Record", value: avg },
         ]
-          .filter(({ value }) => value === 0)
+          .filter(({ value }) => value !== 0)
           .map(({ label, value }) => (
             <div
               className="flex flex-row items-center justify-between w-96 font-medium text-lg mb-2"

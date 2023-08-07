@@ -14,7 +14,7 @@ class SnapshotsDB {
 
   async save(day: Dayjs, snapshots: Dayjs[]): Promise<void> {
     await this.lf.setItem(
-      day.format("YYYY-MM-DD"),
+      this.asKey(day),
       snapshots.map((s) => s.toString())
     );
   }
@@ -23,6 +23,10 @@ class SnapshotsDB {
     const snapshots = await this.lf.getItem<string[]>(this.asKey(day));
     if (!snapshots) return null;
     return snapshots.map((snapshot) => dayjs(snapshot));
+  }
+
+  async clean(day: Dayjs): Promise<void> {
+    await this.lf.removeItem(this.asKey(day));
   }
 
   private asKey(day: Dayjs): string {
