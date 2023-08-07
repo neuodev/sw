@@ -1,6 +1,7 @@
 import dayjs, { Dayjs } from "dayjs";
-import React, { useContext, useReducer } from "react";
+import React, { useContext, useEffect, useReducer, useState } from "react";
 import { produce } from "immer";
+import { snapshotsDB } from "../storage/snapshots";
 
 const TimeContext = React.createContext<TimeProviderContext | null>(null);
 
@@ -28,7 +29,7 @@ enum TimeActionType {
   Continue = "continue",
   Reset = "reset",
   AddSecond = "add-second",
-  AddTimeRecord = "add-time-record",
+  SetSnapshots = "set-snapshots",
 }
 
 type TimeAction =
@@ -36,7 +37,8 @@ type TimeAction =
   | { type: TimeActionType.Pause }
   | { type: TimeActionType.Continue }
   | { type: TimeActionType.Reset }
-  | { type: TimeActionType.AddSecond };
+  | { type: TimeActionType.AddSecond }
+  | { type: TimeActionType.SetSnapshots; snapshots: Dayjs[] };
 
 const defaultState: TimeState = {
   start: null,
@@ -63,10 +65,15 @@ function timeReducer(state: TimeState, action: TimeAction): TimeState {
 
         d.isStopped = true;
         d.snapshots.push(state.end);
+        snapshotsDB.save(dayjs(), d.snapshots);
       });
     case TimeActionType.Continue:
       return produce(state, (d) => {
         d.isStopped = false;
+      });
+    case TimeActionType.SetSnapshots:
+      return produce(state, (d) => {
+        d.snapshots = action.snapshots;
       });
     case TimeActionType.Reset:
       return produce(defaultState, () => {});
@@ -83,7 +90,9 @@ function timeReducer(state: TimeState, action: TimeAction): TimeState {
 export const TimeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [state, dispatch] = useReducer(timeReducer, defaultState);
+  const [state, dispatch] = useReducer(timeReducer, {
+    ...defaultState,
+  });
 
   const actions: TimeActions = {
     startTimer(time?: Dayjs) {
@@ -102,6 +111,13 @@ export const TimeProvider: React.FC<{ children: React.ReactNode }> = ({
       dispatch({ type: TimeActionType.AddSecond });
     },
   };
+
+  useEffect(() => {
+    snapshotsDB.load(dayjs()).then((snapshots) => {
+      if (!snapshots) return;
+      dispatch({ type: TimeActionType.SetSnapshots, snapshots });
+    });
+  }, []);
   return (
     <TimeContext.Provider value={{ ...state, ...actions }}>
       {children}

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Button from "../Common/Button";
 import { useTime } from "@/app/context/time";
 import dayjs from "dayjs";
-import { sleep } from "@/app/utils";
 
 const Controller: React.FC<{}> = () => {
   const {
